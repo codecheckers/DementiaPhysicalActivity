@@ -1,0 +1,1 @@
+##Ask Nivel for ADL scores - doesnt seem to be all items of the ADL questionnaire?
