@@ -30,7 +30,7 @@ splitDataInEpochs<- function (ACCData, EpochLength) {
 #enter epochLengthMAD as numeric (in seconds)
 #enter epochLengthMIMS as character (eg '10 min' or '10 sec')
 
-extractENMO_MAD <- function (dataInMIMSFormat, epochLengthMAD, epochLengthMIMS) {
+extractENMO_MAD <- function (dataInMIMSFormat, EpochLengthMAD_ENMO, epochLengthMIMS) {
   
   # use MIMS_DF_Input data format (as formatted in ExtractMIMS.R script)
   
@@ -49,25 +49,50 @@ extractENMO_MAD <- function (dataInMIMSFormat, epochLengthMAD, epochLengthMIMS) 
   end <- dataInMIMSFormat$HEADER_TIME_STAMP [length(dataInMIMSFormat$HEADER_TIME_STAMP)]
   
   MAD <- numeric()
-  for (k in 1: floor(as.numeric(end-start)/ EpochLengthMAD )) {
+  EN_Epochs <- numeric ()
+  ENMO_Epochs <- numeric ()
+  
+  #use Function to get epoch information/ index per epoch
+  indices<- splitDataInEpochs (dataInMIMSFormat, EpochLengthMAD_ENMO)
+    
+  for (k in 1: floor(as.numeric(end-start)/ EpochLengthMAD_ENMO )) {
     split<- which(indices == k)
-    meanEN <- mean(EN [split])
+    meanEN <- mean(EN [split]) # average EN per epoch
     deviationPerI <- abs(EN [split] - meanEN)
     sumDeviation <- sum(deviationPerI)
-    MAD [k] <- sumDeviation / epochLengthMAD
+    MAD [k] <- sumDeviation / EpochLengthMAD_ENMO
+    
+    #save per epoch averages of EN and ENMO:
+    EN_Epochs[k]  <- meanEN
+    ENMO_Epochs [k] <- mean(ENMO [split])
   }
   
-  #seems to give a negative value if there is a data problem?? 
-  MIMS<- MIMSunit::mims_unit(dataInMIMSFormat, dynamic_range=c(-3,3), epoch= epochLengthMIMS)
+  EN_MAD_Measures<- data.frame(MAD, EN_Epochs, ENMO_Epochs)
   
+  #seems to give a negative value if there is a data problem?? 
+  #MIMS<- MIMSunit::mims_unit(dataInMIMSFormat, dynamic_range=c(-3,3), epoch= epochLengthMIMS)
+  return(EN_MAD_Measures)
 }
 
+# run this on all datafiles and store
+
+ENMO_MAD <- list ()
+residentID<- character ()
+for (i in 1:length(datafiles)) {
+  AccDat<-formatAccDat(datafiles [i])
+  ENMO_MAD [[i]] <- extractENMO_MAD(AccDat, 5, '30min')
+  residentID [i] <- filename_split<-strsplit(filename, " ") [[1]] [1]
+}
+
+#combine measures per residentID and calculate:
+#Mean MAD
+#SD MAD
+#Mean EMNO
+#SD EMNO
 
 
-## TODO: package this nicely into two functions, 
-# returning a full data.frame with EN and ENMO 
-# returning per entered dataset and epoch length a vector of MAD values
-
+#return data.frame with: 
+#ResidentID MAD_Mean MAD_SD ENMO_Mean ENMO_SD
 
 
 
