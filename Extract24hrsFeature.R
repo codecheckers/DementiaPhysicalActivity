@@ -118,7 +118,7 @@ levels(DataActive21$Activity) <- c ("6",  "1", "2", "5", "4", "6" , "1", "2", "5
 # 4 Sleeping
 # 5 Not on wrist
 # 6 Cycling
-# 7 No Data
+# 7 No Data (either at begin or end of a data collection) 
 ##################
 
 #transform into per Person counts: 
@@ -134,35 +134,90 @@ PerPerson21<- sapply(splitdat21,function(x) tapply(as.numeric(x$Minutes), x$Acti
 
 TotalObservedMinutes21<- colSums(PerPerson21,na.rm = TRUE)
 
-Normalized21 <- matrix(nrow=5, ncol = ncol(PerPerson21))
-NormalizedTo30min21<- matrix(nrow=5, ncol = ncol(PerPerson21))
+Normalized24hrs21 <- matrix(nrow=5, ncol = ncol(PerPerson21))
+Normalized24hrsTo30min21<- matrix(nrow=5, ncol = ncol(PerPerson21))
 for (i in 1: length(PerPerson21[1,])) {
-  Normalized21 [,i] <- round(as.numeric(PerPerson21 [,i]/ TotalObservedMinutes21 [i]),3)
-  NormalizedTo30min21 [,i] <- round(as.numeric(PerPerson21 [,i]/ TotalObservedMinutes21 [i]),3) * 30
+  Normalized24hrs21 [,i] <- round(as.numeric(PerPerson21 [,i]/ TotalObservedMinutes21 [i]),3)
+  Normalized24hrsTo30min21 [,i] <- round(as.numeric(PerPerson21 [,i]/ TotalObservedMinutes21 [i]),3) * 30
 }
-colnames(Normalized21) <- colnames(PerPerson21)
-colnames(NormalizedTo30min21) <- colnames(PerPerson21)
+
+colnames(Normalized24hrs21) <- colnames(PerPerson21)
+colnames(Normalized24hrsTo30min21) <- colnames(PerPerson21)
+rownames(Normalized24hrs21) <- rownames(PerPerson21)
+rownames(Normalized24hrsTo30min21) <- rownames(PerPerson21)
 
 ###########
 TotalObservedMinutes19<- colSums(PerPerson19,na.rm = TRUE)
 
-Normalized19 <- matrix(nrow=6, ncol = ncol(PerPerson19))
-NormalizedTo30min19<- matrix(nrow=6, ncol = ncol(PerPerson19))
+Normalized24hrs19 <- matrix(nrow=6, ncol = ncol(PerPerson19))
+Normalized24hrsTo30min19<- matrix(nrow=6, ncol = ncol(PerPerson19))
 for (i in 1: length(PerPerson19[1,])) {
-  Normalized19 [,i] <- round(as.numeric(PerPerson19 [,i]/ TotalObservedMinutes19 [i]),3)
-  NormalizedTo30min19 [,i] <- round(as.numeric(PerPerson19 [,i]/ TotalObservedMinutes19 [i]),3) * 30
+  Normalized24hrs19 [,i] <- round(as.numeric(PerPerson19 [,i]/ TotalObservedMinutes19 [i]),3)
+  Normalized24hrsTo30min19 [,i] <- round(as.numeric(PerPerson19 [,i]/ TotalObservedMinutes19 [i]),3) * 30
 }
-colnames(Normalized19) <- colnames(PerPerson19)
-colnames(NormalizedTo30min19) <- colnames(PerPerson19)
-
+colnames(Normalized24hrs19) <- colnames(PerPerson19)
+colnames(Normalized24hrsTo30min19) <- colnames(PerPerson19)
+rownames(Normalized24hrs19) <- rownames(PerPerson19)
+rownames(Normalized24hrsTo30min19) <- rownames(PerPerson19)
 ############
 
 #check how we can bring 21 and 19 together into one database while keeping the Activity Levels and 
 #linking it to accelerometer data
 
 #!!! Activity Level Names might differ in 19 and 21 dataset?? Double check!!
+#Tripple check the Level Names, especially the "No Data" category -- No Data category seems to be only in 2019 
+# --> artifact from data collection to fill days from 9 am to 17 hrs
 
 
+#Visualize Activity Data
+
+dat24hrs21 <- data.frame(
+  
+  MovementCategory = factor(c(rownames(Normalized24hrsTo30min21),3,7), #add category 3 and 7 as NA row 
+                            levels=c("1","2", "3", "4", "5", "6", "7")),
+  
+  TimeSums = c(rowSums(Normalized24hrsTo30min21, na.rm = TRUE), 0,0 ) #category 3 and 7 has 0 entries in this data
+)
+
+dat24hrs19 <- data.frame(
+  
+  MovementCategory = factor(c(rownames(Normalized24hrsTo30min19),3), #add category 3 and 7 as NA row 
+                            levels=c("1","2", "3", "4", "5", "6", "7")),
+  
+  TimeSums = c(rowSums(Normalized24hrsTo30min19, na.rm = TRUE), 0 ) #category 3 and 7 has 0 entries in this data
+)
+
+all24hrs<- rbind(dat24hrs21, dat24hrs19)
 
 
+#the levels and labels are sorted manually to get the colors correctly mapped
+dat24hrs <- data.frame(
+  MovementCategory = factor(c(rownames(Normalized24hrsTo30min19),3), 
+                            levels=c("1","2", "4", "5", "6", "7", "3"),
+                            labels = c( "Inactive","Light", "Heavy", "Sleeping",
+                                        "Not on wrist", "Cycling", "No Data " ) ),
+  
+  TimeSums = tapply(as.numeric(all24hrs$TimeSums), all24hrs$MovementCategory, function(x) sum (x, na.rm=TRUE) )
+)
+  
+  
+#add manually matching labels/ legend is off!!
+
+p24hrs <- ggplot(data=dat24hrs, aes(x=MovementCategory, y=TimeSums, fill=MovementCategory)) +
+  
+  geom_bar(stat="identity")
+
+p24hrs +  theme_bw() + scale_fill_discrete(labels=c("Inactive", "Light", "Heavy", "Sleeping",
+                                                    "Not on Wrist", "Cycling", "No Data"))
+  
+
+
+#CODES:
+# 1 Inactive
+# 2 Light
+# 3 Heavy
+# 4 Sleeping
+# 5 Not on wrist
+# 6 Cycling
+# 7 No Data
 

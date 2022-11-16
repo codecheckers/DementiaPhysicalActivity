@@ -108,7 +108,43 @@ for (i in 1: length(MEDLO_Total[,1])) {
   NormalizedTo30min [i,] <- round(as.numeric(MEDLO_Total [i,2:8]/ TotalObservedMinutes [i]),3) * 30
 }
 
+#add participant ID
+Normalized <- data.frame (bwcode = MEDLO_Total [,1],Normalized)
+NormalizedTo30min <- data.frame (bwcode = MEDLO_Total [,1],NormalizedTo30min)
 #########################
-# Add/keep PatientID/NIVELParticipantID in place to match data later with Wearable Data
+
+#Visualize Medlo Data
+
+dat <- data.frame(
+  
+  MovementCategoryMedlo = factor(c("1","2", "3", "4", "5", "6", "7"), 
+                      levels    = c("1","2", "3", "4", "5", "6", "7"),
+                     labels = c("Lying/No Movement","Sitting quietly", "Light to moderate sitting", 
+                              "Standing", "Standing activity/walking around", "Walking Activity/Cycling", 
+                              "Sports/Whole Body Movement")),
+  
+  TimeSumsMedlo = colSums(NormalizedTo30min [,2:8], na.rm = TRUE)
+)
+
+#make proper labels per movement category 
+p <- ggplot(data=dat, aes(x=MovementCategoryMedlo, y=TimeSumsMedlo, fill=MovementCategoryMedlo)) +
+  
+  geom_bar(stat="identity")
+
+p + scale_x_discrete(labels=c("Lying/No Movement" = "Lying", 
+                              "Sitting quietly" = "Sitting Quiet",
+                              "Light to moderate sitting" = "Sitting Moderate",
+                              "Standing" = "Standing",
+                              "Standing activity/walking around" = "Walking",
+                              "Walking Activity/Cycling" = "Active Walk",
+                              "Sports/Whole Body Movement" = "Sports")) +
+ theme_bw() +
+ theme(axis.text.x = element_text(size=14, angle=80)) 
+
+
+
+
+
+
 
 

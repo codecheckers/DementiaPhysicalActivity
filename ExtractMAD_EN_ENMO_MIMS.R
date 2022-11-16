@@ -5,19 +5,19 @@
 
 
 #### FUNCTION get Epochs - creates a vector with indices per epoch   
-splitDataInEpochs<- function (ACCData, EpochLength) {
-  start<- ACCData$HEADER_TIME_STAMP [1]
-  end <- ACCData$HEADER_TIME_STAMP [length(ACCData$HEADER_TIME_STAMP)]
+splitDataInEpochs<- function (dataInMIMSFormat, EpochLength) {
+  start<- dataInMIMSFormat$HEADER_TIME_STAMP [1]
+  end <- dataInMIMSFormat$HEADER_TIME_STAMP [length(dataInMIMSFormat$HEADER_TIME_STAMP)]
   
-  epochsNeeded<- floor(as.numeric(end-start)/ EpochLength )
+  epochsNeeded<- floor(as.numeric(difftime(end,start, units = "mins"))/ EpochLength )
   
   indices<- numeric()
   indices [1] <- 1
   EpochStart <- start #first timepoint starts
   
   for (j in 1:epochsNeeded){
-    index1<- which (ACCData$HEADER_TIME_STAMP < EpochStart + EpochLength)
-    index2<- which (ACCData$HEADER_TIME_STAMP [index1] > EpochStart)
+    index1<- which (dataInMIMSFormat$HEADER_TIME_STAMP < EpochStart + EpochLength)
+    index2<- which (dataInMIMSFormat$HEADER_TIME_STAMP [index1] > EpochStart)
     
     indices [index2] <- j
     EpochStart <- EpochStart + EpochLength
@@ -55,7 +55,7 @@ extractENMO_MAD <- function (dataInMIMSFormat, EpochLengthMAD_ENMO, epochLengthM
   #use Function to get epoch information/ index per epoch
   indices<- splitDataInEpochs (dataInMIMSFormat, EpochLengthMAD_ENMO)
     
-  for (k in 1: floor(as.numeric(end-start)/ EpochLengthMAD_ENMO )) {
+  for (k in 1: floor(as.numeric(difftime(end,start, units = "mins"))/ EpochLength ) ) {
     split<- which(indices == k)
     meanEN <- mean(EN [split]) # average EN per epoch
     deviationPerI <- abs(EN [split] - meanEN)
@@ -74,15 +74,7 @@ extractENMO_MAD <- function (dataInMIMSFormat, EpochLengthMAD_ENMO, epochLengthM
   return(EN_MAD_Measures)
 }
 
-# run this on all datafiles and store
 
-ENMO_MAD <- list ()
-residentID<- character ()
-for (i in 1:length(datafiles)) {
-  AccDat<-formatAccDat(datafiles [i])
-  ENMO_MAD [[i]] <- extractENMO_MAD(AccDat, 5, '30min')
-  residentID [i] <- filename_split<-strsplit(filename, " ") [[1]] [1]
-}
 
 #combine measures per residentID and calculate:
 #Mean MAD
