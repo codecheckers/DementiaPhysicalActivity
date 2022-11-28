@@ -24,6 +24,22 @@ ActivityDat19<-  read.csv("Data24hr/LongFormat-Table 1.csv",header=FALSE)
 ActivityDat19 <- ActivityDat19 [,-c(6,7)] #redundant empty columns
 colnames(ActivityDat19) <- c("Date", "Time", "Activity", "Minutes", "ID")
 
+###! CLEAN DATA by HAND!! - The "No Data" category is an artifact of data entry in 2019. 
+#To "fill" the minutes between 9 hrs and 15 hrs, the assistant entering the data added a "No Data"
+#category. Those times are before or after the data collection, for example if a resident slept longer
+#or didnt want to wear the watch anymore. Here, we are removing this category manually. 
+
+ActivityDat19<- ActivityDat19[- which(ActivityDat19$Activity == 7), ]
+
+#### More artifacts of data collection: Whenever category "5" (not on wrist) is the first entry of a 
+# data collection day or the second entry after "2" (light) --> remove both data points. Light activity 
+# is the switching on of watch and moving to prepare watches/finding the resident; "not on wrist" is 
+# data points while the watch is on but lies in a basket and not yet fitted.
+
+
+
+
+
 #remove empty rows - those are times between switching on the watch and putting it on wrist or
 #btw removing wristband and switching watch off
 ActivityDat19<-ActivityDat19[- which(ActivityDat19$Activity == ""), ]
@@ -35,9 +51,51 @@ ActivityDat19$Activity <- factor(ActivityDat19$Activity)
 
 # activity summed up per Person
 splitdat19<- split(ActivityDat19, ActivityDat19$ID)
+#this script removes entries of category 5 as first entry or as second entry of the activities
+#this is an artifact of the data collection with the wearables being already on while not yet on the residents' wrists
+#
+splitdataPerPerson19<- split(ActivityDat19, ActivityDat19$ID)
+
+for (j in 1: length(splitdataPerPerson19)) {
+  splitPerDate<- split(splitdataPerPerson19 [j][[1]], splitdataPerPerson19 [j] [[1]]$Date )
+  
+  for (i in 1:length(splitPerDate) ) {
+    if(length(splitPerDate[i][[1]]$Activity) == 1) {
+      ifelse(splitPerDate[i][[1]]$Activity [1] == 5,
+             splitPerDate[i][[1]]$Activity <- NA,#replace,
+             splitPerDate[i][[1]] <- splitPerDate[i][[1]]);
+      next
+    } 
+    
+    check<-0
+    check<- splitPerDate[i][[1]]$Activity [1] == 5 #turns 1/0
+    checkTwo<- splitPerDate[i][[1]]$Activity [2] == 5 #turns 1/0
+    
+    ifelse(checkTwo == TRUE, check<-2, check<-check)
+    
+    if(check == 1) {
+      splitPerDate[i][[1]] <- splitPerDate[i][[1]] [-1,] }
+    if(check == 2) {
+      splitPerDate[i] [[1]]<- splitPerDate[i][[1]] [-c(1,2),] }
+    
+    else{splitPerDate[i] [[1]]<- splitPerDate[i][[1]]}
+    
+  }
+  unsplitvector<- unlist(sapply(splitPerDate, function (j) j [1]$Date))
+  splitdataPerPerson19 [j][[1]] <- unsplit(splitPerDate, unsplitvector)
+  
+  ifelse(any (is.na(splitdataPerPerson19 [j][[1]]$Activity)),
+         splitdataPerPerson19 [j][[1]] <- splitdataPerPerson19 [j][[1]] [- which(is.na(splitdataPerPerson19 [j][[1]]$Activity)), ],#rmv NA rows,
+         splitdataPerPerson19 [j][[1]] <- splitdataPerPerson19 [j][[1]])
+  
+}
+
 #this gives an overview per ID and per factor of Activity
 #ID in columns, activity in rows
-PerPerson19<- sapply(splitdat19,function(x) tapply(as.numeric(x$Minutes), x$Activity, function(x) sum (x, na.rm=TRUE) ) )
+PerPerson19<- sapply(splitdataPerPerson19,function(x) tapply(as.numeric(x$Minutes), x$Activity, function(x) sum (x, na.rm=TRUE) ) )
+
+#old version on un-cleaned data (i.e. including the "not on wrist" at the beginning of data collection)
+#PerPerson19<- sapply(splitdat19,function(x) tapply(as.numeric(x$Minutes), x$Activity, function(x) sum (x, na.rm=TRUE) ) )
 
 #################################
 #################################
@@ -103,6 +161,9 @@ Dat14<- transformData21 ( "Data24hr/ActivityLog_20210514.csv")
 
 DataActive21<- rbind(Dat10, Dat11, Dat12, Dat13, Dat14)
 
+Dat10[
+  order( Dat10[,5],Dat10[,1], Dat10[,2] ),
+]
 #Levels:  cycling inactive light not on wrist sleeping
 # rename levels into 1 - 7
 # current: "Cycling"      "Inactive"     "Light"        "Not on wrist" "Sleeping"     "cycling"      "inactive"     "light"       
@@ -149,8 +210,8 @@ rownames(Normalized24hrsTo30min21) <- rownames(PerPerson21)
 ###########
 TotalObservedMinutes19<- colSums(PerPerson19,na.rm = TRUE)
 
-Normalized24hrs19 <- matrix(nrow=6, ncol = ncol(PerPerson19))
-Normalized24hrsTo30min19<- matrix(nrow=6, ncol = ncol(PerPerson19))
+Normalized24hrs19 <- matrix(nrow=5, ncol = ncol(PerPerson19))
+Normalized24hrsTo30min19<- matrix(nrow=5, ncol = ncol(PerPerson19))
 for (i in 1: length(PerPerson19[1,])) {
   Normalized24hrs19 [,i] <- round(as.numeric(PerPerson19 [,i]/ TotalObservedMinutes19 [i]),3)
   Normalized24hrsTo30min19 [,i] <- round(as.numeric(PerPerson19 [,i]/ TotalObservedMinutes19 [i]),3) * 30
@@ -173,16 +234,16 @@ rownames(Normalized24hrsTo30min19) <- rownames(PerPerson19)
 
 dat24hrs21 <- data.frame(
   
-  MovementCategory = factor(c(rownames(Normalized24hrsTo30min21),3,7), #add category 3 and 7 as NA row 
-                            levels=c("1","2", "3", "4", "5", "6", "7")),
+  MovementCategory = factor(c(rownames(Normalized24hrsTo30min21),3), #add category 3 and 7 as NA row 
+                            levels=c("1","2", "3", "4", "5", "6")),
   
-  TimeSums = c(rowSums(Normalized24hrsTo30min21, na.rm = TRUE), 0,0 ) #category 3 and 7 has 0 entries in this data
+  TimeSums = c(rowSums(Normalized24hrsTo30min21, na.rm = TRUE), 0 ) #category 3 and 7 has 0 entries in this data
 )
 
 dat24hrs19 <- data.frame(
   
   MovementCategory = factor(c(rownames(Normalized24hrsTo30min19),3), #add category 3 and 7 as NA row 
-                            levels=c("1","2", "3", "4", "5", "6", "7")),
+                            levels=c("1","2", "3", "4", "5", "6")),
   
   TimeSums = c(rowSums(Normalized24hrsTo30min19, na.rm = TRUE), 0 ) #category 3 and 7 has 0 entries in this data
 )
@@ -192,10 +253,10 @@ all24hrs<- rbind(dat24hrs21, dat24hrs19)
 
 #the levels and labels are sorted manually to get the colors correctly mapped
 dat24hrs <- data.frame(
-  MovementCategory = factor(c(rownames(Normalized24hrsTo30min19),3), 
-                            levels=c("1","2", "4", "5", "6", "7", "3"),
+  MovementCategory = factor(c(rownames(Normalized24hrsTo30min19),3,7), 
+                            levels=c("1","2", "4", "5", "6", "3", "7"),
                             labels = c( "Inactive","Light", "Heavy", "Sleeping",
-                                        "Not on wrist", "Cycling", "No Data " ) ),
+                                        "Not on wrist", "Cycling" , "No Data ") ),
   
   TimeSums = tapply(as.numeric(all24hrs$TimeSums), all24hrs$MovementCategory, function(x) sum (x, na.rm=TRUE) )
 )
@@ -210,6 +271,40 @@ p24hrs <- ggplot(data=dat24hrs, aes(x=MovementCategory, y=TimeSums, fill=Movemen
 p24hrs +  theme_bw() + scale_fill_discrete(labels=c("Inactive", "Light", "Heavy", "Sleeping",
                                                     "Not on Wrist", "Cycling", "No Data"))
   
+
+
+#CODES:
+# 1 Inactive
+# 2 Light
+# 3 Heavy
+# 4 Sleeping
+# 5 Not on wrist
+# 6 Cycling
+# 7 No Data
+
+########################
+##Clean Version - Remove the empty "No Data" category -- those data points are an artifact of data entry.
+
+#the levels and labels are sorted manually to get the colors correctly mapped
+dat24hrs <- data.frame(
+  MovementCategory = factor(c(rownames(Normalized24hrsTo30min19),3), 
+                            levels=c("1","2", "4", "5", "6", "3"),
+                            labels = c( "Inactive","Light", "Heavy", "Sleeping",
+                                        "Not on wrist", "Cycling") ),
+  
+  TimeSums = tapply(as.numeric(all24hrs$TimeSums), all24hrs$MovementCategory, function(x) sum (x, na.rm=TRUE) )
+)
+
+
+#add manually matching labels/ legend is off!!
+
+p24hrs <- ggplot(data=dat24hrs, aes(x=MovementCategory, y=TimeSums, fill=MovementCategory)) +
+  
+  geom_bar(stat="identity")
+
+p24hrs +  theme_bw() + scale_fill_discrete(labels=c("Inactive", "Light", "Heavy", "Sleeping",
+                                                    "Not on Wrist", "Cycling"))
+
 
 
 #CODES:
