@@ -25,10 +25,14 @@ datafiles<- paste0("DataAcc/",files_from_batch [filterAAG]) #sorted by participa
 # run this on all datafiles and store
 ENMO_MAD <- list ()
 residentID<- character ()
+startAcc<-as.POSIXct(numeric())
+endAcc<-as.POSIXct(numeric())
 for (i in 1:length(datafiles)) {
   AccDat<-formatAccDat(datafiles [i]) 
-  ENMO_MAD [[i]] <- extractENMO_MAD(AccDat, 5, '30min')
+#  ENMO_MAD [[i]] <- extractENMO_MAD(AccDat, 60, '30min')
   residentID [i] <- strsplit(strsplit(datafiles [i], " ") [[1]] [1], "/") [[1]][2]
+  startAcc [i] <- AccDat$HEADER_TIME_STAMP[1]
+  endAcc [i] <- AccDat$HEADER_TIME_STAMP[length (AccDat$HEADER_TIME_STAMP )]
 }
 
 

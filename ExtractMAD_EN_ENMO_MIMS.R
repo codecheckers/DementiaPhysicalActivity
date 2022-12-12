@@ -9,7 +9,7 @@ splitDataInEpochs<- function (dataInMIMSFormat, EpochLength) {
   start<- dataInMIMSFormat$HEADER_TIME_STAMP [1]
   end <- dataInMIMSFormat$HEADER_TIME_STAMP [length(dataInMIMSFormat$HEADER_TIME_STAMP)]
   
-  epochsNeeded<- floor(as.numeric(difftime(end,start, units = "mins"))/ EpochLength )
+  epochsNeeded<- floor(as.numeric(difftime(end,start, units = "secs"))/ EpochLength )
   
   indices<- numeric()
   indices [1] <- 1
@@ -55,7 +55,7 @@ extractENMO_MAD <- function (dataInMIMSFormat, EpochLengthMAD_ENMO, epochLengthM
   #use Function to get epoch information/ index per epoch
   indices<- splitDataInEpochs (dataInMIMSFormat, EpochLengthMAD_ENMO)
     
-  for (k in 1: floor(as.numeric(difftime(end,start, units = "mins"))/ EpochLength ) ) {
+  for (k in 1: floor(as.numeric(difftime(end,start, units = "secs"))/ EpochLengthMAD_ENMO ) ) {
     split<- which(indices == k)
     meanEN <- mean(EN [split]) # average EN per epoch
     deviationPerI <- abs(EN [split] - meanEN)

@@ -115,7 +115,7 @@ NormalizedTo30min <- data.frame (bwcode = MEDLO_Total [,1],NormalizedTo30min)
 
 #Visualize Medlo Data
 
-dat <- data.frame(
+datMedlo <- data.frame(
   
   MovementCategoryMedlo = factor(c("1","2", "3", "4", "5", "6", "7"), 
                       levels    = c("1","2", "3", "4", "5", "6", "7"),
@@ -127,7 +127,7 @@ dat <- data.frame(
 )
 
 #make proper labels per movement category 
-p <- ggplot(data=dat, aes(x=MovementCategoryMedlo, y=TimeSumsMedlo, fill=MovementCategoryMedlo)) +
+p <- ggplot(data=datMedlo, aes(x=MovementCategoryMedlo, y=TimeSumsMedlo, fill=MovementCategoryMedlo)) +
   
   geom_bar(stat="identity")
 
