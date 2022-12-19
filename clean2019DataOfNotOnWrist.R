@@ -3,8 +3,10 @@
 #this is an artifact of the data collection with the wearables being already on while not yet on the residents' wrists
 #
 
-splitdataPerPerson19<- split(ActivityDat19, ActivityDat19$ID)
-
+clean2019_24hrs<- function (Data24hrs_19) {
+  
+  splitdataPerPerson19<- split(Data24hrs_19, Data24hrs_19$ID)
+  
   for (j in 1: length(splitdataPerPerson19)) {
     splitPerDate<- split(splitdataPerPerson19 [j][[1]], splitdataPerPerson19 [j] [[1]]$Date )
     
@@ -38,4 +40,9 @@ splitdataPerPerson19<- split(ActivityDat19, ActivityDat19$ID)
            splitdataPerPerson19 [j][[1]] <- splitdataPerPerson19 [j][[1]])
     
   }
+  
+  return (splitdataPerPerson19)
+  
+}
+
   

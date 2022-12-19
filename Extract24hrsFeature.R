@@ -37,9 +37,6 @@ ActivityDat19<- ActivityDat19[- which(ActivityDat19$Activity == 7), ]
 # data points while the watch is on but lies in a basket and not yet fitted.
 
 
-
-
-
 #remove empty rows - those are times between switching on the watch and putting it on wrist or
 #btw removing wristband and switching watch off
 ActivityDat19<-ActivityDat19[- which(ActivityDat19$Activity == ""), ]
@@ -210,8 +207,8 @@ rownames(Normalized24hrsTo30min21) <- rownames(PerPerson21)
 ###########
 TotalObservedMinutes19<- colSums(PerPerson19,na.rm = TRUE)
 
-Normalized24hrs19 <- matrix(nrow=5, ncol = ncol(PerPerson19))
-Normalized24hrsTo30min19<- matrix(nrow=5, ncol = ncol(PerPerson19))
+Normalized24hrs19 <- matrix(nrow=6, ncol = ncol(PerPerson19))
+Normalized24hrsTo30min19<- matrix(nrow=6, ncol = ncol(PerPerson19))
 for (i in 1: length(PerPerson19[1,])) {
   Normalized24hrs19 [,i] <- round(as.numeric(PerPerson19 [,i]/ TotalObservedMinutes19 [i]),3)
   Normalized24hrsTo30min19 [,i] <- round(as.numeric(PerPerson19 [,i]/ TotalObservedMinutes19 [i]),3) * 30
@@ -253,12 +250,12 @@ all24hrs<- rbind(dat24hrs21, dat24hrs19)
 
 #the levels and labels are sorted manually to get the colors correctly mapped
 dat24hrs <- data.frame(
-  MovementCategory = factor(c(rownames(Normalized24hrsTo30min19),3,7), 
+  MovementCategory = factor(c(rownames(Normalized24hrsTo30min19),3), 
                             levels=c("1","2", "4", "5", "6", "3", "7"),
                             labels = c( "Inactive","Light", "Heavy", "Sleeping",
-                                        "Not on wrist", "Cycling" , "No Data ") ),
+                                        "Not on wrist", "No Data ", "Cycling") ),
   
-  TimeSums = tapply(as.numeric(all24hrs$TimeSums), all24hrs$MovementCategory, function(x) sum (x, na.rm=TRUE) )
+  TimeSums = c(tapply(as.numeric(all24hrs$TimeSums), all24hrs$MovementCategory, function(x) sum (x, na.rm=TRUE)),0 )
 )
   
   
