@@ -36,7 +36,6 @@ ActivityDat19<- ActivityDat19[- which(ActivityDat19$Activity == 7), ]
 # is the switching on of watch and moving to prepare watches/finding the resident; "not on wrist" is 
 # data points while the watch is on but lies in a basket and not yet fitted.
 
-
 #remove empty rows - those are times between switching on the watch and putting it on wrist or
 #btw removing wristband and switching watch off
 ActivityDat19<-ActivityDat19[- which(ActivityDat19$Activity == ""), ]
@@ -47,7 +46,9 @@ levels(ActivityDat19) <- c(1,2,4,5,6,7)
 ActivityDat19$Activity <- factor(ActivityDat19$Activity)
 
 # activity summed up per Person
-splitdat19<- split(ActivityDat19, ActivityDat19$ID)
+# splitdat19<- split(ActivityDat19, ActivityDat19$ID)
+
+
 #this script removes entries of category 5 as first entry or as second entry of the activities
 #this is an artifact of the data collection with the wearables being already on while not yet on the residents' wrists
 #
@@ -217,6 +218,7 @@ colnames(Normalized24hrs19) <- colnames(PerPerson19)
 colnames(Normalized24hrsTo30min19) <- colnames(PerPerson19)
 rownames(Normalized24hrs19) <- rownames(PerPerson19)
 rownames(Normalized24hrsTo30min19) <- rownames(PerPerson19)
+
 ############
 
 #check how we can bring 21 and 19 together into one database while keeping the Activity Levels and 

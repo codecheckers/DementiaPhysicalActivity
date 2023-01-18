@@ -18,6 +18,7 @@ Medlo_2019 [which(Medlo_2019 [,8] == "11 S KWA-056-01-02-08"),8] <- "KWA-056-01-
 ### Accelerometer Data 2021
 #Data is stored in batches
 #per batch several different measures and differently many participants are included in one batch
+### Actual processing into ENMO and MAD is done on a stand alone laptop, this is just to show the pipeline
 
 # get all filenames
 files_from_batch<- list.files("DataAcc") #add path here - will be the path to the data folder on the server
@@ -26,10 +27,12 @@ filterAAG<-sapply(strsplit(files_from_batch, " "), function (x) x [9] == "aag.da
 # run the functions to get measurements on those data
 datafiles<- paste0("DataAcc/",files_from_batch [filterAAG]) #sorted by participant ID!
 
-## import Accelerometer Times (start end times) for filtering
+
+
+## import Accelerometer Times (start end times) for filtering of "not on wrist times" -- I.e. we only use wearable data collected 
+## during the times we also switched the watches on/off for data collection
+
 load("DataAcc1/AccTimesForFiltering.RData") #loads an object called: AccTimesForFiltering
-
-
 
 
 ### 24hrs Data 2021 and 2019
@@ -37,6 +40,7 @@ load("DataAcc1/AccTimesForFiltering.RData") #loads an object called: AccTimesFor
 ActivityDat19<-  read.csv("Data24hr/LongFormat-Table 1.csv",header=FALSE)
 ActivityDat19 <- ActivityDat19 [,-c(6,7)] #redundant empty columns
 colnames(ActivityDat19) <- c("Date", "Time", "Activity", "Minutes", "ID")
+
 #2021:
 Data24hrs_21_10_File<- "Data24hr/ActivityLog_20210510.csv"
 Data24hrs_21_11_File<- "Data24hr/ActivityLog_20210511.csv"
@@ -44,7 +48,7 @@ Data24hrs_21_12_File<- "Data24hr/ActivityLog_20210512.csv"
 Data24hrs_21_13_File<- "Data24hr/ActivityLog_20210513.csv"
 Data24hrs_21_14_File<- "Data24hr/ActivityLog_20210514.csv"
 
-### Clean 24 hrs data
+### Clean 24 hrs data with two cleaning functions
 clean2021_24hrs_Dat<- clean2021_24hrs (Data24hrs_21_10_File, 
                                        Data24hrs_21_11_File,
                                        Data24hrs_21_12_File,
@@ -59,13 +63,21 @@ clean2019_24hrs_Dat <- clean2019_24hrs ( ActivityDat19)
 ### use three different epochs to calculate these estimators (calculate on stand alone PC --- Import Results)
 
 #Import ENMO MAD Averages:
-AveragesPerResident_5sec<- ENMO_MAD_Averages5_sec #or use load()
-AveragesPerResident_60sec<- ENMO_MAD_Averages60_sec
-AveragesPerResident_30min<- ENMO_MAD_Averages30_min
+ENMO_30min <- readRDS("ENMOAverages_1800.rds") #30 min epoch
+ENMO_60sec <- readRDS("averagesENMO_60.rds") #60 sec epochs 
+
+#run 5 sec epochs on windows laptop -- see to do list
 
 
 ## Normalize Medlo Data
-
+#getCounts !!throws many warning messages bc of iterative merging
+MedloCounts19<- extractActivityCountsPerR (Medlo_2019)
+MedloCounts21<- extractActivityCountsPerR (Medlo_2021)
+#normalizeData to 30 min
+#adjust colnames because of typo in codebw/codebew
+colnames(MedloCounts19) <- c('codebw', '1', '2', '3', '4', '5', '6', '7', '99999')
+MEDLO_Total<- rbind(MedloCounts21, MedloCounts19 [,1:8]) #only 1:8 to get rid of "99999" entries
+MedloDat<- normalizeMedlo30min(MEDLO_Total)
 
 
 ## Normalize 24hrs Data
@@ -74,6 +86,9 @@ AveragesPerResident_30min<- ENMO_MAD_Averages30_min
 
 ### Link Data into data frames to correlate data:
 ### For 2019 and 2021: Medlo and 24 hrs data
+
+
+
 ### For 2021: Medlo, 24hrs, esimators (MAD and ENMO)
 MedloData <- NormalizedTo30min ##still needs to enter this pipeline
 Normalized_24hrs_Data <- Normalized24hrsTo30min21 ##still needs to enter this pipeline
@@ -81,7 +96,10 @@ ENMO_MAD_Data <-
 
 LinkedData_21<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data)
 
+### create linkedData for different ENMO/MAD epochs to compare results
 
+
+### see file with Plotting Script for the correlation matrices
 
 
 
