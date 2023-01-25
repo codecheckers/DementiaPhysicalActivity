@@ -48,7 +48,12 @@ Data24hrs_21_12_File<- "Data24hr/ActivityLog_20210512.csv"
 Data24hrs_21_13_File<- "Data24hr/ActivityLog_20210513.csv"
 Data24hrs_21_14_File<- "Data24hr/ActivityLog_20210514.csv"
 
-### Clean 24 hrs data with two cleaning functions
+### Clean 24 hrs data with two cleaning functions:
+### 2019 data gets cleaned by removing category 5 data as first or second entry 
+###- wristband was switched on but not yet worn by client
+### 2021 data gets cleaned by using the times that Accelerometer Data was collected
+### during 2021 the wristband were switched on just before Acc Data got recorded
+
 clean2021_24hrs_Dat<- clean2021_24hrs (Data24hrs_21_10_File, 
                                        Data24hrs_21_11_File,
                                        Data24hrs_21_12_File,
@@ -63,10 +68,9 @@ clean2019_24hrs_Dat <- clean2019_24hrs ( ActivityDat19)
 ### use three different epochs to calculate these estimators (calculate on stand alone PC --- Import Results)
 
 #Import ENMO MAD Averages:
-ENMO_30min <- readRDS("ENMOAverages_1800.rds") #30 min epoch
+ENMO_30min <- readRDS("averagesENMO_1800.rds") #30 min epoch
 ENMO_60sec <- readRDS("averagesENMO_60.rds") #60 sec epochs 
-
-#run 5 sec epochs on windows laptop -- see to do list
+ENMO_5sec<- readRDS("averagesENMO_5.rds")
 
 
 ## Normalize Medlo Data
@@ -81,25 +85,39 @@ MedloDat<- normalizeMedlo30min(MEDLO_Total)
 
 
 ## Normalize 24hrs Data
+#use clean data to get per Person counts:
 
+#todo: turn clean data into row/column overview per person and level
+perPerson19 <- get24hourcounts_19 (clean2019_24hrs_Dat)
+perPerson21 <- get24hourcounts_21 (clean2021_24hrs_Dat)
 
+#normalize per Person counts
+Data24hrs19<- normalize24hrs30min(perPerson19)
+Data24hrs21<- normalize24hrs30min(perPerson21)
 
 ### Link Data into data frames to correlate data:
 ### For 2019 and 2021: Medlo and 24 hrs data
 
 
 
-### For 2021: Medlo, 24hrs, esimators (MAD and ENMO)
-MedloData <- NormalizedTo30min ##still needs to enter this pipeline
-Normalized_24hrs_Data <- Normalized24hrsTo30min21 ##still needs to enter this pipeline
-ENMO_MAD_Data <- 
-
-LinkedData_21<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data)
+### For 2021: Medlo, 24hrs, estimators (MAD and ENMO)
+MedloData <- NormalizedTo30min #
+Normalized_24hrs_Data <- Normalized24hrsTo30min21 #
+keydata<- Link19_21
 
 ### create linkedData for different ENMO/MAD epochs to compare results
 
+ENMO_MAD_Data <- ENMO_30min
+LinkedData_21_30min<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data, keydata)
 
-### see file with Plotting Script for the correlation matrices
+ENMO_MAD_Data <- ENMO_60sec
+LinkedData_21_60sec<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data, keydata)
+
+ENMO_MAD_Data <- ENMO_5sec
+LinkedData_21_5sec<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data, keydata)
+
+
+### see file with PlottingScripts.R for the correlation matrices
 
 
 
