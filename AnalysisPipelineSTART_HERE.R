@@ -113,7 +113,21 @@ LinkedData_21_30min<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Dat
 ENMO_MAD_Data <- ENMO_60sec
 LinkedData_21_60sec<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data, keydata)
 
+#function for fragmentation calculation
+fragment<- function (x){
+  time <- seq(1:length(x)); out<- diff(x,na.rm=TRUE)/ diff (time, na.rm=TRUE); return(sd(out,na.rm=TRUE))
+}
+
 ENMO_MAD_Data <- ENMO_5sec
+ENMO_MAD_Data <- data.frame(ENMO_MAD_Data,
+SD=sapply(MAD_AllEpochs5sec, sd, na.rm=TRUE), #sd
+Median=sapply(MAD_AllEpochs5sec, median, na.rm=TRUE), #median
+Qant=sapply(MAD_AllEpochs5sec, quantile,0.95, na.rm=TRUE), #95th
+#fragmentation: standard deviation of the 1st derivative of the timeseries
+Frag=sapply(MAD_AllEpochs5sec,fragment),
+#time spend above 100 (relative)
+Rel= sapply(MAD_AllEpochs5sec, function (x) length(which(x >100))) )
+
 LinkedData_21_5sec<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data, keydata)
 
 

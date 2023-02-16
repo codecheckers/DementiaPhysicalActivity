@@ -10,27 +10,37 @@ AveragesPerResident[,4]<- as.numeric(AveragesPerResident[,4])
 
 #Link 2021 Data:
 
-link21data<- function (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data) {
+link21data<- function (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data, keydata) {
   
-  SensorData_21<- merge(ENMO_MAD_Data, keydata, by.x = "residents", by.y = "LIACS.ID" )
+  SensorData_21<- merge(ENMO_MAD_Data, keydata, by.x = "ResidentID", by.y = "LIACS.ID" )
   
   # add 24hrs data
   #add colnames
-  Dat21_24hrs<-cbind(t(Normalized_24hrs_Data), residents= as.numeric(colnames(Normalized_24hrs_Data)))
+  Dat21_24hrs<-cbind(t(Normalized_24hrs_Data), ResidentID= as.numeric(colnames(Normalized_24hrs_Data)))
   
   #Sensors and 24hrs logs in 21
-  WatchData_21 <- merge(SensorData_21,Dat21_24hrs, by = "residents" )
+  WatchData_21 <- merge(SensorData_21,Dat21_24hrs, by = "ResidentID" )
   
   #Sensors, 24hrs, Medlo in 21
   MovementData_21 <- merge(WatchData_21, MedloData, by.x = "NIVEL.ID..Compas.2019.", by.y = "bwcode")
-  colnames(MovementData_21) <- c( "NIVEL_ID", "LIACS_ID", "MAD", "EN", "ENMO", "Cycling", "Inactive", "Light", 
-                                  "NotOnWrist", "Sleeping", "MLO1", "MLO2", "MLO3", "MLO4", "MLO5",
+  MovementData_21 <- MovementData_21[,-c(13,14,15,16,17)] #remove empty cols from keyfile and an empty column for "cycling" 
+  colnames(MovementData_21) <- c( "NIVEL_ID", "LIACS_ID", 
+                                  "MeanMAD", "MeanEN", "MeanENMO",
+                                  "MinMAD","MinEN", "MinENMO",
+                                  "MaxMAD", "MaxEN", "MaxENMO",
+                                  "NoEpochs",
+                                  "Inactive", "Light", 
+                                  "NotOnWrist", "Sleeping", 
+                                  "MLO1", "MLO2", "MLO3", "MLO4", "MLO5",
                                   "MLO6", "MLO7")
   
   #select a subset of entries for correlation matrix:
-  data<- MovementData_21[, c(3,5,7,8,11,12,13,14,15,16) ]
+  data<- MovementData_21[, c(3,5,7,
+                             13,14,15,16,
+                             17,18,19,20,21,22) ]
   data[is.na(data)] <- 0
   
+  return(data)
 }
 
 
