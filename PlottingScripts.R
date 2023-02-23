@@ -65,15 +65,21 @@ corrplot.mixed(cor(LinkedData_21_30min),
 dev.off() 
 
 # Opening the graphical device
-pdf("CorrelationMatrix_5sec.pdf")
-corrplot.mixed(cor(LinkedData_21_5sec),
-               lower = "number", 
-               upper = "circle",
+pdf("CorrelationMatrix_5sec_hc.pdf",10,10)
+corrplot(cor(LinkedData_21_5sec),
+               method = 'number',
+               #lower = "number", 
+               #upper = "circle",
                tl.col = "black",
                title = "5secEpochs",
-               mar=c(0,0,2,0))
+               mar=c(0,0,2,0),
+               order = "hc", 
+               addrect = 2)
+               
 # Closing the graphical device
 dev.off() 
+
+
 
 # Opening the graphical device
 pdf("CorrelationMatrix_60sec.pdf")

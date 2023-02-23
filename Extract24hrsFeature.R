@@ -1,3 +1,85 @@
+get24hourcounts_21 <- function (clean21Data) {
+  splitdat21<-split(clean21Data, clean21Data$ID)
+  PerPerson21_doubles<- sapply(splitdat21,function(x) tapply(as.numeric(x$Minutes), x$Activity, function(x) sum (x, na.rm=TRUE) ) )
+  ## manual cleaning and summing as some entries are capitalized and otheres are not....
+  PerPerson21<- rbind ( rowSums(cbind(PerPerson21_doubles [1,], PerPerson21_doubles [6,]), na.rm= TRUE ), #Cycling/ cycling
+                        rowSums(cbind(PerPerson21_doubles [2,], PerPerson21_doubles [7,]), na.rm= TRUE ), #Inactive/ inactive
+                        rowSums(cbind(PerPerson21_doubles [3,], PerPerson21_doubles [8,]), na.rm= TRUE ), #Light/ light
+                        rowSums(cbind(PerPerson21_doubles [4,], PerPerson21_doubles [9,]), na.rm= TRUE ), #Not/not on wrist
+                        rowSums(cbind(PerPerson21_doubles [5,], PerPerson21_doubles [10,]), na.rm= TRUE )) #Sleeping/sleeping
+  row.names(PerPerson21) <- c("Cycling", "Inactive", "Light", "NotOnWrist", "Sleeping")
+  
+  return (PerPerson21)
+  
+}
+
+removeEmptyEntries19Data <- function (subpartClean19Data) {
+  indexNA<- which(subpartClean19Data$Time == "")
+  ifelse(any(subpartClean19Data$Time == "-"),
+         indexNA<- c(indexNA,which(subpartClean19Data$Time == "-")),
+         indexNA<-indexNA)
+  removedNA<- subpartClean19Data [-indexNA,]
+  return(removedNA)
+}
+
+get24hourcounts_19 <- function (clean19Data) {
+  emptyEntriesRemoved<- lapply(clean19Data, removeEmptyEntries19Data)
+  perPersonList<- sapply(emptyEntriesRemoved, function (x) {tapply(as.numeric(x$Minutes), x$Activity, function(x) sum (x, na.rm=TRUE) )} )
+  
+  perPerson<- matrix(ncol=11, nrow=7)
+  
+  for (i in 1:length(perPersonList)) {
+    counts <- numeric(length = 7)
+    counts [ as.numeric(dimnames(perPersonList[[i]])[[1]]) ] <- perPersonList[[i]]
+    perPerson[,i] <- counts
+  }
+  
+  #remove row 3 and 7 - HEAVY is empty and 7 is "no Data" an artifact from data entry
+  perPerson <- perPerson[-c(3,7),]
+  
+  IDs <- sapply(emptyEntriesRemoved, function (x) x$ID[1] )
+  #add ID as colnames and activitynames as rownames
+  colnames(perPerson) <- IDs
+  
+  rownames(perPerson) <- c("Inactive", "Light", "Sleeping", "NotOnWrist", "Cycling")
+  
+  return(perPerson)
+}
+
+#normalize to 30 min (analogue to MEDLO data)
+normalize24hrs30min<- function (PerPersonOverview){
+  
+  TotalObservedMinutes<- colSums(PerPersonOverview,na.rm = TRUE)
+  
+  #Normalized24hrs21 <- matrix(nrow=5, ncol = ncol(PerPersonOverview))
+  Normalized24hrsTo30min<- matrix(nrow=5, ncol = ncol(PerPersonOverview))
+  for (i in 1: length(PerPersonOverview[1,])) {
+    # Normalized24hrs21 [,i] <- round(as.numeric(PerPersonOverview [,i]/ TotalObservedMinutes21 [i]),3)
+    Normalized24hrsTo30min [,i] <- round(as.numeric(PerPersonOverview [,i]/ TotalObservedMinutes21 [i]),3) * 30
+  }
+  
+  colnames(Normalized24hrsTo30min) <- colnames(PerPersonOverview)
+  rownames(Normalized24hrsTo30min) <- rownames(PerPersonOverview)
+  
+  return (Normalized24hrsTo30min)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #import Data
 
 #Categories "24hrs log": Per resident and minute of recording, 
@@ -187,73 +269,9 @@ splitdat21<- split(DataActive21, DataActive21$ID)
 #ID in columns, activity in rows
 PerPerson21<- sapply(splitdat21,function(x) tapply(as.numeric(x$Minutes), x$Activity, function(x) sum (x, na.rm=TRUE) ) )
 
-get24hourcounts_21 <- function (clean21Data) {
-  splitdat21<-split(clean21Data, clean21Data$ID)
-  PerPerson21_doubles<- sapply(splitdat21,function(x) tapply(as.numeric(x$Minutes), x$Activity, function(x) sum (x, na.rm=TRUE) ) )
-  ## manual cleaning and summing as some entries are capitalized and otheres are not....
-  PerPerson21<- rbind ( rowSums(cbind(PerPerson21_doubles [1,], PerPerson21_doubles [6,]), na.rm= TRUE ), #Cycling/ cycling
-                        rowSums(cbind(PerPerson21_doubles [2,], PerPerson21_doubles [7,]), na.rm= TRUE ), #Inactive/ inactive
-                        rowSums(cbind(PerPerson21_doubles [3,], PerPerson21_doubles [8,]), na.rm= TRUE ), #Light/ light
-                        rowSums(cbind(PerPerson21_doubles [4,], PerPerson21_doubles [9,]), na.rm= TRUE ), #Not/not on wrist
-                        rowSums(cbind(PerPerson21_doubles [5,], PerPerson21_doubles [10,]), na.rm= TRUE )) #Sleeping/sleeping
-  row.names(PerPerson21) <- c("Cycling", "Inactive", "Light", "NotOnWrist", "Sleeping")
-  
-  return (PerPerson21)
-  
-}
-
-removeEmptyEntries19Data <- function (subpartClean19Data) {
-  indexNA<- which(subpartClean19Data$Time == "")
-  ifelse(any(subpartClean19Data$Time == "-"),
-         indexNA<- c(indexNA,which(subpartClean19Data$Time == "-")),
-         indexNA<-indexNA)
-  removedNA<- subpartClean19Data [-indexNA,]
-  return(removedNA)
-}
-
-get24hourcounts_19 <- function (clean19Data) {
-  emptyEntriesRemoved<- lapply(clean19Data, removeEmptyEntries19Data)
-  perPersonList<- sapply(emptyEntriesRemoved, function (x) {tapply(as.numeric(x$Minutes), x$Activity, function(x) sum (x, na.rm=TRUE) )} )
-  
-  perPerson<- matrix(ncol=11, nrow=7)
-  
-  for (i in 1:length(perPersonList)) {
-    counts <- numeric(length = 7)
-    counts [ as.numeric(dimnames(perPersonList[[i]])[[1]]) ] <- perPersonList[[i]]
-    perPerson[,i] <- counts
-  }
-  
-  #remove row 3 and 7 - HEAVY is empty and 7 is "no Data" an artifact from data entry
-  perPerson <- perPerson[-c(3,7),]
-  
-  IDs <- sapply(emptyEntriesRemoved, function (x) x$ID[1] )
-  #add ID as colnames and activitynames as rownames
-  colnames(perPerson) <- IDs
-
-  rownames(perPerson) <- c("Inactive", "Light", "Sleeping", "NotOnWrist", "Cycling")
-  
-  return(perPerson)
-}
 
 
 #################
-#normalize to 30 min (analogue to MEDLO data)
-normalize24hrs30min<- function (PerPersonOverview){
-  
-  TotalObservedMinutes<- colSums(PerPersonOverview,na.rm = TRUE)
-  
-  #Normalized24hrs21 <- matrix(nrow=5, ncol = ncol(PerPersonOverview))
-  Normalized24hrsTo30min<- matrix(nrow=5, ncol = ncol(PerPersonOverview))
-  for (i in 1: length(PerPersonOverview[1,])) {
-   # Normalized24hrs21 [,i] <- round(as.numeric(PerPersonOverview [,i]/ TotalObservedMinutes21 [i]),3)
-    Normalized24hrsTo30min [,i] <- round(as.numeric(PerPersonOverview [,i]/ TotalObservedMinutes21 [i]),3) * 30
-  }
-  
-  colnames(Normalized24hrsTo30min) <- colnames(PerPersonOverview)
-  rownames(Normalized24hrsTo30min) <- rownames(PerPersonOverview)
-  
-  return (Normalized24hrsTo30min)
-}
 
 #TotalObservedMinutes21<- colSums(PerPerson21,na.rm = TRUE)
 

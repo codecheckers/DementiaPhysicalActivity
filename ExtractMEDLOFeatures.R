@@ -1,3 +1,42 @@
+#commented out the option of normalizing for number of minutes observerd
+#normalizing to 30 min makes more sense and is easier to understand
+
+normalizeMedlo30min<- function (countData){
+  
+  TotalObservedMinutes<- rowSums(countData [,2:8],na.rm = TRUE)
+  
+  # Normalized <- matrix(nrow=length(countData[,1]), ncol = 7)
+  NormalizedTo30min<- matrix(nrow=length(countData[,1]), ncol = 7)
+  
+  for (i in 1: length(countData[,1])) {
+    #  Normalized [i,] <- round(as.numeric(countData [i,2:8]/ TotalObservedMinutes [i]),3)
+    NormalizedTo30min [i,] <- round(as.numeric(countData [i,2:8]/ TotalObservedMinutes [i]),3) * 30
+  }
+  
+  #add participant ID
+  #Normalized <- data.frame (bwcode = countData [,1],Normalized)
+  NormalizedTo30min <- data.frame (bwcode = countData [,1],NormalizedTo30min)
+  
+  return(NormalizedTo30min)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Import MEDLO Data
 
 library(haven)
@@ -121,28 +160,6 @@ extractActivityCountsPerR<- function (MEDLOdataAsImported){
 #MEDLO_19<-cbind (ResidentCodes19, ResLevelsTotal19)
 #colnames(MEDLO_19) <- c("codebw",  as.character(seq(1:7)), "99999")
 #######################
-
-#commented out the option of normalizing for number of minutes observerd
-#normalizing to 30 min makes more sense and is easier to understand
-
-normalizeMedlo30min<- function (countData){
-  
-  TotalObservedMinutes<- rowSums(countData [,2:8],na.rm = TRUE)
-  
- # Normalized <- matrix(nrow=length(countData[,1]), ncol = 7)
-  NormalizedTo30min<- matrix(nrow=length(countData[,1]), ncol = 7)
-  
-  for (i in 1: length(countData[,1])) {
-  #  Normalized [i,] <- round(as.numeric(countData [i,2:8]/ TotalObservedMinutes [i]),3)
-    NormalizedTo30min [i,] <- round(as.numeric(countData [i,2:8]/ TotalObservedMinutes [i]),3) * 30
-  }
-  
-  #add participant ID
-  #Normalized <- data.frame (bwcode = countData [,1],Normalized)
-  NormalizedTo30min <- data.frame (bwcode = countData [,1],NormalizedTo30min)
-  
-  return(NormalizedTo30min)
-}
 
 
 
