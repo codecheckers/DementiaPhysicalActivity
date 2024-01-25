@@ -1,4 +1,4 @@
-#Plotting Scripts
+Plotting Scripts
 
 ##############################
 #Barcharts - MEDLO and 24hrs data
@@ -11,7 +11,7 @@ datMedlo <- data.frame(
                                             "Standing", "Standing activity/walking around", "Walking Activity/Cycling", 
                                             "Sports/Whole Body Movement")),
   
-  TimeSumsMedlo = c(colSums(LinkedData_21_30min [,8:13], na.rm = TRUE),0)
+  TimeSumsMedlo = c(colSums(LinkedData_21_5sec [,8:13], na.rm = TRUE),0)
 )
 
 p <- ggplot(data=datMedlo, aes(x=MovementCategoryMedlo, y=TimeSumsMedlo, fill=MovementCategoryMedlo)) +
@@ -71,9 +71,10 @@ corrplot(cor(LinkedData_21_5sec),
                #lower = "number", 
                #upper = "circle",
                tl.col = "black",
-               title = "5secEpochs",
+               title = "",
                mar=c(0,0,2,0),
-               order = "hc", 
+               order = "hclust", 
+              hclust.method = "complete",
                addrect = 2)
                
 # Closing the graphical device
@@ -112,24 +113,115 @@ pairs(LinkedData_21_60sec[,c(4,5,6,7,8,9,10,11,12,13)], pch = 19)
 
 MAD_AllEpochs5sec<-readRDS("epochsPerResident5sec.rds")
 allData<-numeric(length=3)
+allMeans<-numeric()
 
 for (i in 1:length(MAD_AllEpochs5sec)){
 
-dat<-data.frame(MAD=MAD_AllEpochs5sec[[i]],
-                 time= seq (1: length( MAD_AllEpochs5sec[[i]])),
-                 resident=rep(i, length(MAD_AllEpochs5sec[[i]])))
+dat<-data.frame(MAD=MAD_AllEpochs5sec[[i]][,1],
+                 measurement= seq (1:  length( MAD_AllEpochs5sec[[i]][,1])),
+                 resident=rep(i, length(MAD_AllEpochs5sec[[i]][,1])))
 
 allData<-rbind(allData,dat)
+allMeans<-c(allMeans, mean(dat$MAD,na.rm=TRUE))
 }
-library(ggplot2)
-allData<- allData [-1,]
-ggplot(allData, aes(time, MAD)) +
-  geom_point()+
-  facet_wrap(~allData$resident, nrow=3)
 
-p <- ggplot(allData, aes(x=as.factor(allData$resident), y=MAD)) + 
+allData<- allData [-1,] #remove empty first line
+var(allMeans)
+min(allMeans)
+max(allMeans)
+#########
+
+
+
+
+library(ggplot2)
+###! This takes a long time to render!
+p<- ggplot(allData, aes(x=measurement, y=MAD)) +
+    geom_point()+
+    facet_wrap(~allData$resident, nrow=3)
+p
+ggsave(filename="PerResidentMAD.png")
+
+#####This is more doable,saves plots individually
+for (j in 1:length(unique(allData$resident))) {
+  filename <- paste0("PerResidentMADResidentID",j,".png")
+  sampleResident <- allData[which(allData$resident == j),]
+  q<-ggplot(sampleResident, aes(x=measurement, y =MAD)) + geom_point()
+  q
+  ggsave(filename)
+}
+
+lowvarianceResIDs<- c(6,2,15)
+highvarianceResIDs<- c(8,14,13)
+
+p<- ggplot(allData [which(allData$resident %in%lowvarianceResIDs),], 
+           aes(x=measurement, y=MAD)) +
+  geom_point()+
+  ylim(0,420)+
+  facet_wrap(~allData [which(allData$resident %in%lowvarianceResIDs),]$resident, 
+             nrow=1)
+p
+ggsave("MADSpreadLowVariance0to420.pdf")
+
+q<- ggplot(allData [which(allData$resident %in%highvarianceResIDs),], 
+           aes(x=measurement, y=MAD)) +
+  geom_point()+
+  ylim(0,420)+
+  facet_wrap(~allData [which(allData$resident %in%highvarianceResIDs),]$resident, 
+             nrow=1)
+q
+ggsave("MADSpreadHighVariance0to420.pdf")
+
+#### violin plots of MAD data per resident
+p <- ggplot(allData [which(allData$resident %in%lowvarianceResIDs),], 
+            aes(x=as.factor(allData [which(allData$resident %in%lowvarianceResIDs),]$resident), 
+                y=MAD)) + 
   geom_violin()
 p
 
 #############################
+#instead of barcharts of the summed data, make boxplots of the percentage of time
+#a resident spend in one movement category
+
+Medlo_2019$codebew
+
+percentageActiveMedlo21<- MedloData [1:13 ,2:8] * 100/30 #!!! Use on first 13 entries for 2021 entries
+percentageActiveMedlo21[is.na(percentageActiveMedlo21)] <- 0 #clear NAs
+
+percentageActiveSamsungCat<- t(Normalized_24hrs_Data) *100/30
+percentageActiveSamsungCat[is.na(percentageActiveSamsungCat)] <- 0 #clear NAs
+
+percentageActiveMedloLong21<- data.frame(
+  percentage=unlist(c(percentageActiveMedlo21)),
+  activity=c(rep("ML01", 13), rep("ML02", 13),
+             rep("ML03", 13),
+             rep("ML04", 13), rep("ML05", 13),
+             rep("ML06", 13), rep("ML07", 13))
+)
+
+percentageActiveSamsungLong<- data.frame(
+  percentage=unlist(c(percentageActiveSamsungCat)),
+  activity=c(rep("Cycling", 16), rep("Inactive", 16), 
+             rep("Light", 16), 
+             rep("NotOnWrist", 16), rep("Sleeping", 16) )
+)
+
+boxplot(percentageActiveMedloLong21$percentage ~ percentageActiveMedloLong21$activity,
+        col='steelblue',
+        main='Percentage of Time spent per activity',
+        xlab='Activity',
+        ylab='Percentage of Time') 
+
+# Opening the graphical device
+pdf("BoxplotAllCatsSamsungPercent.pdf")
+boxplot(percentageActiveSamsungLong$percentage ~ percentageActiveSamsungLong$activity,
+        col='steelblue',
+        main='Percentage of Time spent per activity',
+        xlab='Activity',
+        ylab='Percentage of Time') 
+
+# Closing the graphical device
+dev.off() 
+
+
 

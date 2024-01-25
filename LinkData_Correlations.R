@@ -22,22 +22,28 @@ link21data<- function (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data, keydata)
   WatchData_21 <- merge(SensorData_21,Dat21_24hrs, by = "ResidentID" )
   
   #Sensors, 24hrs, Medlo in 21
-  MovementData_21 <- merge(WatchData_21, MedloData, by.x = "NIVEL.ID..Compas.2019.", by.y = "bwcode")
-  MovementData_21 <- MovementData_21[,-c(13,14,15,16,17)] #remove empty cols from keyfile and an empty column for "cycling" 
+  MovementData_21 <- merge(WatchData_21, MedloData, by.x = "NIVEL.ID..Compas.2019.", by.y = "bwcode") #this is where "cycling" disappears 
+  #(only full observations are kept - for correlations later)
+  
+  #MovementData_21 <- MovementData_21[,-c(21,22,23,24)] #remove empty cols from keyfile - not needed anymore, cleaned keyfile when importing data
+  
   colnames(MovementData_21) <- c( "NIVEL_ID", "LIACS_ID", 
-                                  "MeanMAD", "MeanEN", "MeanENMO",
+                                  "MADmean", "MeanEN", "MeanENMO",
                                   "MinMAD","MinEN", "MinENMO",
                                   "MaxMAD", "MaxEN", "MaxENMO",
+                                  "VarMAD", "VarEN", "VarENMO",
                                   "NoEpochs",
-                                  "Inactive", "Light", 
+                                  "MADsd", "MADmedian", "MADqant", "MADfrag","MADrel",
+                                  "Cycling","Inactive", "Light", 
                                   "NotOnWrist", "Sleeping", 
                                   "MLO1", "MLO2", "MLO3", "MLO4", "MLO5",
                                   "MLO6", "MLO7")
   
   #select a subset of entries for correlation matrix:
-  data<- MovementData_21[, c(3,5,7,
-                             13,14,15,16,
-                             17,18,19,20,21,22) ]
+  data<- MovementData_21[, c(3, #MADmean
+                             16,17,18,19,20, #sd,median, qant,frag,rel
+                             22,23,24,25, #inactive, light, sleeping, not on wrist
+                             26,27,29,30) ]#ml1,ml2,ml4, ml5
   data[is.na(data)] <- 0
   
   return(data)

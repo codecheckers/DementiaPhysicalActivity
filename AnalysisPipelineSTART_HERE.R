@@ -103,7 +103,7 @@ Data24hrs21<- normalize24hrs30min(perPerson21)
 ### For 2021: Medlo, 24hrs, estimators (MAD and ENMO)
 MedloData <- NormalizedTo30min #
 Normalized_24hrs_Data <- Normalized24hrsTo30min21 #
-keydata<- Link19_21
+keydata<- Link19_21 [,1:2]
 
 ### create linkedData for different ENMO/MAD epochs to compare results
 
@@ -128,6 +128,7 @@ Frag=sapply(MAD_AllEpochs5sec,fragment),
 #time spend above 100 (relative)
 Rel= sapply(MAD_AllEpochs5sec, function (x) length(which(x >100))) )
 
+#create dataset for correlation matrix (this means some data will be lost bc only complete sets are kept!)
 LinkedData_21_5sec<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data, keydata)
 
 
