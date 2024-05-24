@@ -55,7 +55,7 @@ normalize24hrs30min<- function (PerPersonOverview){
   Normalized24hrsTo30min<- matrix(nrow=5, ncol = ncol(PerPersonOverview))
   for (i in 1: length(PerPersonOverview[1,])) {
     # Normalized24hrs21 [,i] <- round(as.numeric(PerPersonOverview [,i]/ TotalObservedMinutes21 [i]),3)
-    Normalized24hrsTo30min [,i] <- round(as.numeric(PerPersonOverview [,i]/ TotalObservedMinutes21 [i]),3) * 30
+    Normalized24hrsTo30min [,i] <- round(as.numeric(PerPersonOverview [,i]/ TotalObservedMinutes [i]),3) * 30
   }
   
   colnames(Normalized24hrsTo30min) <- colnames(PerPersonOverview)

@@ -1,4 +1,13 @@
-Plotting Scripts
+#Plotting Scripts
+#Script for Boxplots (Fig 1 and 2) is all the way at the end of this script
+#Script for Correlation Matrix (Fig 3) is half way through this script
+#The rest of this script are explorations that didnt make the final paper
+
+###########################################################################
+
+
+LinkedData_21_5sec <- readRDS("linkedData.rds") #read datafile with Medlo and wearable data
+library(ggplot2)
 
 ##############################
 #Barcharts - MEDLO and 24hrs data
@@ -54,7 +63,7 @@ q + scale_x_discrete(labels=c( "Inactive","Light", "Not on wrist", "Sleeping")) 
 library(corrplot)
 
 # Opening the graphical device
-pdf("CorrelationMatrix_30min.pdf")
+pdf("CorrelationMatrix_30min.pdf") #this is based on 30 min epochs, which we didnt use in the end
 corrplot.mixed(cor(LinkedData_21_30min),
                lower = "number", 
                upper = "circle",
@@ -64,8 +73,10 @@ corrplot.mixed(cor(LinkedData_21_30min),
 # Closing the graphical device
 dev.off() 
 
+#This is Figure 3
 # Opening the graphical device
 pdf("CorrelationMatrix_5sec_hc.pdf",10,10)
+#png("CorrelationMatrix_5sec_hc.png") #no margins on png
 corrplot(cor(LinkedData_21_5sec),
                method = 'number',
                #lower = "number", 
@@ -183,9 +194,9 @@ p
 #instead of barcharts of the summed data, make boxplots of the percentage of time
 #a resident spend in one movement category
 
-Medlo_2019$codebew
+#Medlo_2019$codebew
 
-percentageActiveMedlo21<- MedloData [1:13 ,2:8] * 100/30 #!!! Use on first 13 entries for 2021 entries
+percentageActiveMedlo21<- MedloData [1:13 ,2:8] * 100/30 #
 percentageActiveMedlo21[is.na(percentageActiveMedlo21)] <- 0 #clear NAs
 
 percentageActiveSamsungCat<- t(Normalized_24hrs_Data) *100/30
@@ -206,14 +217,23 @@ percentageActiveSamsungLong<- data.frame(
              rep("NotOnWrist", 16), rep("Sleeping", 16) )
 )
 
+# Opening the graphical device
+pdf("BoxplotAllCatsMedloPercent.pdf")
+#png("BoxplotAllCatsMedloPercent.png")
+
 boxplot(percentageActiveMedloLong21$percentage ~ percentageActiveMedloLong21$activity,
         col='steelblue',
         main='Percentage of Time spent per activity',
         xlab='Activity',
         ylab='Percentage of Time') 
 
+# Closing the graphical device
+dev.off() 
+
+
 # Opening the graphical device
 pdf("BoxplotAllCatsSamsungPercent.pdf")
+#png("BoxplotAllCatsSamsungPercent.png")
 boxplot(percentageActiveSamsungLong$percentage ~ percentageActiveSamsungLong$activity,
         col='steelblue',
         main='Percentage of Time spent per activity',
