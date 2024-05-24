@@ -71,10 +71,12 @@ clean2019_24hrs_Dat <- clean2019_24hrs ( ActivityDat19)
 ENMO_30min <- readRDS("averagesENMO_1800.rds") #30 min epoch
 ENMO_60sec <- readRDS("averagesENMO_60.rds") #60 sec epochs 
 ENMO_5sec<- readRDS("averagesENMO_5.rds")
-
+#import per resident complete accelerometer data
+MAD_AllEpochs5sec<-readRDS("epochsPerResident5sec.rds")
 
 ## Normalize Medlo Data
 #getCounts !!throws many warning messages bc of iterative merging
+#functions for this can be found in ExtractMEDLOFeatures.R
 MedloCounts19<- extractActivityCountsPerR (Medlo_2019)
 MedloCounts21<- extractActivityCountsPerR (Medlo_2021)
 #normalizeData to 30 min
@@ -96,13 +98,14 @@ Data24hrs19<- normalize24hrs30min(perPerson19)
 Data24hrs21<- normalize24hrs30min(perPerson21)
 
 ### Link Data into data frames to correlate data:
-### For 2019 and 2021: Medlo and 24 hrs data
+### For 2019 and 2021: Medlo and 24 hrs data 
 
+Link19_21 <- read.csv("DataMedloADL/Link19_21.csv") #load file with keys to link liacs and nivel data
 
 
 ### For 2021: Medlo, 24hrs, estimators (MAD and ENMO)
-MedloData <- NormalizedTo30min #
-Normalized_24hrs_Data <- Normalized24hrsTo30min21 #
+MedloData <- normalizeMedlo30min(MedloCounts21)
+Normalized_24hrs_Data <- Data24hrs21<- normalize24hrs30min(perPerson21)
 keydata<- Link19_21 [,1:2]
 
 ### create linkedData for different ENMO/MAD epochs to compare results
@@ -119,18 +122,20 @@ fragment<- function (x){
 }
 
 ENMO_MAD_Data <- ENMO_5sec
-ENMO_MAD_Data <- data.frame(ENMO_MAD_Data,
-SD=sapply(MAD_AllEpochs5sec, sd, na.rm=TRUE), #sd
-Median=sapply(MAD_AllEpochs5sec, median, na.rm=TRUE), #median
-Qant=sapply(MAD_AllEpochs5sec, quantile,0.95, na.rm=TRUE), #95th
+ENMO_MAD_Data <- data.frame(ENMO_MAD_Data, 
+SD=sapply(MAD_AllEpochs5sec, function (x) {sd(x$MAD,na.rm=TRUE)}),#sd
+Median=sapply(MAD_AllEpochs5sec, function (x) {median(x$MAD,na.rm=TRUE)}), #median
+Qant=sapply(MAD_AllEpochs5sec, function (x) {quantile(x$MAD,0.95,na.rm=TRUE)}), #95th
 #fragmentation: standard deviation of the 1st derivative of the timeseries
-Frag=sapply(MAD_AllEpochs5sec,fragment),
+Frag=sapply(MAD_AllEpochs5sec,function (x) {fragment(x$MAD)}),
+
 #time spend above 100 (relative)
-Rel= sapply(MAD_AllEpochs5sec, function (x) length(which(x >100))) )
+Rel= sapply(MAD_AllEpochs5sec, function (x) length(which(x$MAD >100))) )
 
 #create dataset for correlation matrix (this means some data will be lost bc only complete sets are kept!)
 LinkedData_21_5sec<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data, keydata)
 
+saveRDS(LinkedData_21_5sec, file = "linkedData.rds")
 
 ### see file with PlottingScripts.R for the correlation matrices
 

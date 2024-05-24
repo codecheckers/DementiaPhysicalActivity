@@ -205,7 +205,7 @@ transformData21<- function (csvfile) {
   ActivityDat21 <- ActivityDat21 [- which(is.na (ActivityDat21$End)), ]
   
   #merge with keyfile info to get the ID
-  KeyDat21<- read.csv("Data24hr/completeKeyfileWatches.csv",header=TRUE)
+  KeyDat21<- read.csv("Data24hr/completeKeyfileWatches.csv",header=TRUE) #this file cannot be shared as there are names in this file
   #change and add date notation
   dayonly<-sapply(strsplit(as.character(KeyDat21$Date), "202105"),function (x) x[2])
   newDate<- paste0("2021-05-",dayonly)
