@@ -78,10 +78,13 @@ dev.off()
 pdf("CorrelationMatrix_5sec_hc.pdf",10,10)
 #png("CorrelationMatrix_5sec_hc.png") #no margins on png
 corrplot(cor(LinkedData_21_5sec),
-               method = 'number',
+               method = 'square',
+              type= 'lower',
                #lower = "number", 
                #upper = "circle",
+         addCoef.col = 'black',
                tl.col = "black",
+         cl.pos = 'n',
                title = "",
                mar=c(0,0,2,0),
                order = "hclust", 
