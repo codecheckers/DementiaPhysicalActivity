@@ -1,2 +1,2 @@
 # DementiaPhysicalActivity
-switch to main branch for code!
+switch to master branch for code!
