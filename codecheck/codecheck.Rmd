@@ -63,7 +63,7 @@ With the aggregate data and edited script, we were able to create a version of a
 
 # CODECHECKER notes
 
-Code was written in `R`. Running the current version of the R script `PlottingScripts.R` yields all necessary output files. This took 1 minute to complete on a Windows 10 laptop.
+Code was written in `R`. Running the current version of the `R` script `PlottingScripts.R` yields all necessary output files. This took 1 minute to complete on a Windows 10 laptop with RStudio. On Linux Fedora, we received an error that we are not allowed to run the script in `R`, but the reason is unclear. This is likely due an issue with the Linux installation, not the code.
 
 ## Recommendations
 
