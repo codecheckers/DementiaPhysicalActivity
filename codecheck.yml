@@ -1,0 +1,34 @@
+---
+version: https://codecheck.org.uk/spec/config/1.0
+
+paper:
+  title: >
+    Using Consumer Wearables to Measure Physical Activity of Nursing Home Residents with Dementia
+  authors:
+    - name: Daniela Gawehns
+    - name: Suzanne Portegijs
+    - name: Adriana Petronella 
+    - name: Anna van Beek
+    - name: Matthijs van Leeuwen
+  reference: https://doi.org/10.31234/osf.io/mqg86
+
+manifest:
+  - file: BoxplotallCatsMedloPercent.pdf
+    comment: manuscript Figure 1
+  - file: BoxplotallCatsSamsungPercent.pdf
+    comment: manuscript Figure 2
+  - file: CorrelationMatrix_5sec_hc.tif
+    comment: manuscript Figure 3
+
+codechecker:
+  - name: Stephen J. Eglen
+    ORCID: 0000-0001-8607-8025
+  - name: Daniel Nüst
+    ORCID: 0000-0002-0024-5046
+
+summary: >
+  Downloaded the aggregate data and ran R script to reproduce figures.
+repository: https://github.com/hanneoberman/DementiaPhysicalActivity
+check_time: "2024-11-28 14:00:00"
+certificate: 2024-021
+report: https://doi.org/10.5281/zenodo.14236507
