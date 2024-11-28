@@ -137,9 +137,11 @@ LinkedData_21_5sec<- link21data (MedloData, Normalized_24hrs_Data, ENMO_MAD_Data
 
 saveRDS(LinkedData_21_5sec, file = "linkedData.rds")
 
-### see file with PlottingScripts.R for the correlation matrices
+saveRDS(Normalized_24hrs_Data, file = "NormalizedAccelerometerData.rds")
 
+saveRDS(MedloData,file="MedloData.rds")
 
+### see file with PlottingScripts.R for the correlation matrices and boxplots
 
 
 

@@ -7,54 +7,64 @@
 
 
 LinkedData_21_5sec <- readRDS("linkedData.rds") #read datafile with Medlo and wearable data
+MedloData <- readRDS("MedloData.rds")
+Normalized_24hrs_Data <- readRDS("NormalizedAccelerometerData.rds")
 library(ggplot2)
 
-##############################
-#Barcharts - MEDLO and 24hrs data
 
-datMedlo <- data.frame(
-  
-  MovementCategoryMedlo = factor(c("1","2", "3", "4", "5", "6", "7"), 
-                                 levels    = c("1","2", "3", "4", "5", "6", "7"),
-                                 labels = c("Lying/No Movement","Sitting quietly", "Light to moderate sitting", 
-                                            "Standing", "Standing activity/walking around", "Walking Activity/Cycling", 
-                                            "Sports/Whole Body Movement")),
-  
-  TimeSumsMedlo = c(colSums(LinkedData_21_5sec [,8:13], na.rm = TRUE),0)
+
+#############################
+#instead of barcharts of the summed data, make boxplots of the percentage of time
+#a resident spend in one movement category
+
+#Medlo_2019$codebew
+
+percentageActiveMedlo21<- MedloData [1:13 ,2:8] * 100/30 #
+percentageActiveMedlo21[is.na(percentageActiveMedlo21)] <- 0 #clear NAs
+
+percentageActiveSamsungCat<- t(Normalized_24hrs_Data) *100/30
+percentageActiveSamsungCat[is.na(percentageActiveSamsungCat)] <- 0 #clear NAs
+
+percentageActiveMedloLong21<- data.frame(
+  percentage=unlist(c(percentageActiveMedlo21)),
+  activity=c(rep("ML01", 13), rep("ML02", 13),
+             rep("ML03", 13),
+             rep("ML04", 13), rep("ML05", 13),
+             rep("ML06", 13), rep("ML07", 13))
 )
 
-p <- ggplot(data=datMedlo, aes(x=MovementCategoryMedlo, y=TimeSumsMedlo, fill=MovementCategoryMedlo)) +
-  
-  geom_bar(stat="identity")
-
-p + scale_x_discrete(labels=c("Lying/No Movement" = "Lying", 
-                              "Sitting quietly" = "Sitting Quiet",
-                              "Light to moderate sitting" = "Sitting Moderate",
-                              "Standing" = "Standing",
-                              "Standing activity/walking around" = "Walking",
-                              "Walking Activity/Cycling" = "Active Walk",
-                              "Sports/Whole Body Movement" = "Sports")) +
-  theme_bw() +
-  theme(axis.text.x = element_text(size=14, angle=80)) +
-  theme(legend.position="none")
-
-##########
-
-dat24hrs <- data.frame(
-  MovementCategory = factor(c("1","2", "3","4"), 
-                            levels=c("1","2","3", "4"),
-                            labels = c( "Inactive","Light", "Not on wrist", "Sleeping") ),
-  
-  TimeSums = colSums(LinkedData_21_30min [,4:7], na.rm = TRUE)
+percentageActiveSamsungLong<- data.frame(
+  percentage=unlist(c(percentageActiveSamsungCat)),
+  activity=c(rep("Cycling", 16), rep("Inactive", 16), 
+             rep("Light", 16), 
+             rep("NotOnWrist", 16), rep("Sleeping", 16) )
 )
-q <- ggplot(data=dat24hrs, aes(x=MovementCategory, y=TimeSums, fill=MovementCategory)) +
-  
-  geom_bar(stat="identity")
 
-q + scale_x_discrete(labels=c( "Inactive","Light", "Not on wrist", "Sleeping")) +
-  theme_bw() +
-  theme(axis.text.x = element_text(size=14, angle=80)) +
-  theme(legend.position="none")
+# Opening the graphical device
+pdf("BoxplotAllCatsMedloPercent.pdf")
+#png("BoxplotAllCatsMedloPercent.png")
+
+boxplot(percentageActiveMedloLong21$percentage ~ percentageActiveMedloLong21$activity,
+        col='steelblue',
+        main='Percentage of Time spent per activity',
+        xlab='Activity',
+        ylab='Percentage of Time') 
+
+# Closing the graphical device
+dev.off() 
+
+
+# Opening the graphical device
+pdf("BoxplotAllCatsSamsungPercent.pdf")
+#png("BoxplotAllCatsSamsungPercent.png")
+boxplot(percentageActiveSamsungLong$percentage ~ percentageActiveSamsungLong$activity,
+        col='steelblue',
+        main='Percentage of Time spent per activity',
+        xlab='Activity',
+        ylab='Percentage of Time') 
+
+# Closing the graphical device
+dev.off() 
 
 
 
@@ -63,15 +73,15 @@ q + scale_x_discrete(labels=c( "Inactive","Light", "Not on wrist", "Sleeping")) 
 library(corrplot)
 
 # Opening the graphical device
-pdf("CorrelationMatrix_30min.pdf") #this is based on 30 min epochs, which we didnt use in the end
-corrplot.mixed(cor(LinkedData_21_30min),
-               lower = "number", 
-               upper = "circle",
-               tl.col = "black",
-               title = "30minEpochs",
-               mar=c(0,0,2,0))
+#pdf("CorrelationMatrix_30min.pdf") #this is based on 30 min epochs, which we didnt use in the end
+#corrplot.mixed(cor(LinkedData_21_30min),
+#               lower = "number", 
+#               upper = "circle",
+#               tl.col = "black",
+#               title = "30minEpochs",
+#               mar=c(0,0,2,0))
 # Closing the graphical device
-dev.off() 
+#dev.off() 
 
 #This is Figure 3
 # Opening the graphical device
@@ -94,6 +104,7 @@ corrplot(cor(LinkedData_21_5sec),
 # Closing the graphical device
 dev.off() 
 
+#############################################
 
 
 # Opening the graphical device
@@ -193,58 +204,55 @@ p <- ggplot(allData [which(allData$resident %in%lowvarianceResIDs),],
   geom_violin()
 p
 
-#############################
-#instead of barcharts of the summed data, make boxplots of the percentage of time
-#a resident spend in one movement category
 
-#Medlo_2019$codebew
 
-percentageActiveMedlo21<- MedloData [1:13 ,2:8] * 100/30 #
-percentageActiveMedlo21[is.na(percentageActiveMedlo21)] <- 0 #clear NAs
+#####################################################3
+##############################
+#Barcharts - MEDLO and 24hrs data
 
-percentageActiveSamsungCat<- t(Normalized_24hrs_Data) *100/30
-percentageActiveSamsungCat[is.na(percentageActiveSamsungCat)] <- 0 #clear NAs
-
-percentageActiveMedloLong21<- data.frame(
-  percentage=unlist(c(percentageActiveMedlo21)),
-  activity=c(rep("ML01", 13), rep("ML02", 13),
-             rep("ML03", 13),
-             rep("ML04", 13), rep("ML05", 13),
-             rep("ML06", 13), rep("ML07", 13))
+datMedlo <- data.frame(
+  
+  MovementCategoryMedlo = factor(c("1","2", "3", "4", "5", "6", "7"), 
+                                 levels    = c("1","2", "3", "4", "5", "6", "7"),
+                                 labels = c("Lying/No Movement","Sitting quietly", "Light to moderate sitting", 
+                                            "Standing", "Standing activity/walking around", "Walking Activity/Cycling", 
+                                            "Sports/Whole Body Movement")),
+  
+  TimeSumsMedlo = c(colSums(LinkedData_21_5sec [,8:13], na.rm = TRUE),0)
 )
 
-percentageActiveSamsungLong<- data.frame(
-  percentage=unlist(c(percentageActiveSamsungCat)),
-  activity=c(rep("Cycling", 16), rep("Inactive", 16), 
-             rep("Light", 16), 
-             rep("NotOnWrist", 16), rep("Sleeping", 16) )
+p <- ggplot(data=datMedlo, aes(x=MovementCategoryMedlo, y=TimeSumsMedlo, fill=MovementCategoryMedlo)) +
+  
+  geom_bar(stat="identity")
+
+p + scale_x_discrete(labels=c("Lying/No Movement" = "Lying", 
+                              "Sitting quietly" = "Sitting Quiet",
+                              "Light to moderate sitting" = "Sitting Moderate",
+                              "Standing" = "Standing",
+                              "Standing activity/walking around" = "Walking",
+                              "Walking Activity/Cycling" = "Active Walk",
+                              "Sports/Whole Body Movement" = "Sports")) +
+  theme_bw() +
+  theme(axis.text.x = element_text(size=14, angle=80)) +
+  theme(legend.position="none")
+
+##########
+
+dat24hrs <- data.frame(
+  MovementCategory = factor(c("1","2", "3","4"), 
+                            levels=c("1","2","3", "4"),
+                            labels = c( "Inactive","Light", "Not on wrist", "Sleeping") ),
+  
+  TimeSums = colSums(LinkedData_21_30min [,4:7], na.rm = TRUE)
 )
+q <- ggplot(data=dat24hrs, aes(x=MovementCategory, y=TimeSums, fill=MovementCategory)) +
+  
+  geom_bar(stat="identity")
 
-# Opening the graphical device
-pdf("BoxplotAllCatsMedloPercent.pdf")
-#png("BoxplotAllCatsMedloPercent.png")
-
-boxplot(percentageActiveMedloLong21$percentage ~ percentageActiveMedloLong21$activity,
-        col='steelblue',
-        main='Percentage of Time spent per activity',
-        xlab='Activity',
-        ylab='Percentage of Time') 
-
-# Closing the graphical device
-dev.off() 
-
-
-# Opening the graphical device
-pdf("BoxplotAllCatsSamsungPercent.pdf")
-#png("BoxplotAllCatsSamsungPercent.png")
-boxplot(percentageActiveSamsungLong$percentage ~ percentageActiveSamsungLong$activity,
-        col='steelblue',
-        main='Percentage of Time spent per activity',
-        xlab='Activity',
-        ylab='Percentage of Time') 
-
-# Closing the graphical device
-dev.off() 
+q + scale_x_discrete(labels=c( "Inactive","Light", "Not on wrist", "Sleeping")) +
+  theme_bw() +
+  theme(axis.text.x = element_text(size=14, angle=80)) +
+  theme(legend.position="none")
 
 
 
