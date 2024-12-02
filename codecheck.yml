@@ -6,10 +6,11 @@ paper:
     Using Consumer Wearables to Measure Physical Activity of Nursing Home Residents with Dementia
   authors:
     - name: Daniela Gawehns
+      ORCID: 0000-0002-9678-9012
     - name: Suzanne Portegijs
-    - name: Adriana Petronella 
-    - name: Anna van Beek
+    - name: Adriana Petronella Anna van Beek
     - name: Matthijs van Leeuwen
+      ORCID: 0000-0002-0510-3549
   reference: https://doi.org/10.31234/osf.io/mqg86
 
 manifest:
