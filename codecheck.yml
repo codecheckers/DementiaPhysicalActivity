@@ -33,7 +33,7 @@ codechecker:
 
 summary: >
   Downloaded the aggregate data and ran R script to reproduce figures.
-repository: https://github.com/hanneoberman/DementiaPhysicalActivity
+repository: https://github.com/codecheckers/DementiaPhysicalActivity
 check_time: "2024-11-28 16:00:00"
 certificate: 2024-021
 report: https://doi.org/10.5281/zenodo.14236507

@@ -56,14 +56,17 @@ latex_summary_of_manifest(metadata, manifest_df, root)
 
 # Summary
 
-The repository could be downloaded from GitHub and the `PlottingScripts.R` file contained all code required to produce the three figures in the paper. There were some initial issues with the raw data files not being available. One of the authors of the paper (Daniela Gawehns) provided aggregate data, and edited the R script to remove any code dependent on the raw data.
-With the aggregate data and edited script, we were able to create a version of all three figures present in the paper on three different Windows machines. The third figure contained the same statistics, but a different layout than the figure present in the paper. This is because the author updated the design of this figure for the paper that is currently in press, but has not updated the ArXiv version of the paper.
+Successful CODECHECK. Executing the file `PlottingScripts.R` produces three figures that are equivalent to the ones present in the paper. See CODECHECKER notes for details.
 
 \clearpage
 
 # CODECHECKER notes
 
-Code was written in `R`. Running the current version of the `R` script `PlottingScripts.R` yields all necessary output files. This took 1 minute to complete on a Windows 10 laptop with RStudio. On Linux Fedora, we received an error that we are not allowed to run the script in `R`, but the reason is unclear. This is likely due an issue with the Linux installation, not the code.
+Code was written in `R`. Running the the `R` script `PlottingScripts.R` yields all necessary output files. This took 1 minute to complete on a Windows 10 laptop with RStudio. On Linux Fedora, we received an error that we are not allowed to run the script in `R`, but the reason is unclear. This is likely due an issue with the Linux installation, not the code.
+
+The `PlottingScripts.R` file contained all code required to produce a version of the three figures in the paper. There were some initial issues with the raw data files not being available in the GitHub repository. One of the authors of the paper (Daniela Gawehns) provided aggregate data, and edited the R script to remove any code dependent on the raw data.
+
+With the aggregate data and edited script, we were able to create a version of all three figures present in the paper on three different Windows machines. The third figure contained the same statistics, but a different layout than the figure present in the paper. This is because the author updated the design of this figure for the paper that is currently in press, but has not updated the ArXiv version of the paper.
 
 ## Recommendations
 
@@ -106,6 +109,12 @@ for(i in c(1:nrow(manifest_df))) {
   cat("\\clearpage \n\n")
 }
 ```
+
+### Manually added files
+```{r}
+grid::grid.raster(tiff::readTIFF("../CorrelationMatrix_5sec_hc.tif"))
+```
+
 
 \clearpage
 
