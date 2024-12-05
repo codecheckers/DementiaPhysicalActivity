@@ -32,8 +32,12 @@ codechecker:
     ORCID: 0000-0003-0451-4052
 
 summary: >
-  Downloaded the aggregate data and ran R script to reproduce figures.
+  This report checks the code of the article 'Using Consumer Wearables to Measure Physical Activity of Nursing Home Residents with Dementia'.
+  The CODECHECK was successful.
+  Two of the three figures created were visually identical to those in the paper.
+  The third figure visually matched the figure in the code repository.
+  This figure was equivalent in content but different in design compared to the one presented in the paper. 
 repository: https://github.com/codecheckers/DementiaPhysicalActivity
 check_time: "2024-11-28 16:00:00"
 certificate: 2024-021
-report: https://doi.org/10.5281/zenodo.14236507
+report: https://doi.org/10.5281/zenodo.14261193
